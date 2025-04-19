@@ -4,7 +4,8 @@ import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 import './App.css'
-import coordinatesJSON from './converted_coordinates.json';
+import coordinatesJSON from './resources/converted_coordinates.json';
+import testJSON from './resources/test.json';
 
 const INITIAL_CENTER: [number, number] = [
   10.7521,
@@ -12,19 +13,9 @@ const INITIAL_CENTER: [number, number] = [
 ]
 const INITIAL_ZOOM: number = 12
 
-const coordinates = coordinatesJSON as { type: string; coordinates: number[][][] }
-console.log(coordinates.coordinates.slice(0, 2))
-console.log([
-  [
-    [10, 59],
-    [10.1, 59.1],
-    [10.2, 59.1]
-  ],
-  [
-    [9, 58],
-    [9.9, 58.9]
-  ]
-])
+const coordinatesOne = testJSON as { type: string; coordinates: number[][][] }
+const coordinatesTwo = coordinatesJSON as { type: string; coordinates: number[][][] }
+
 
 function App() {
   const mapRef = useRef<mapboxgl.Map | null>(null)
@@ -54,8 +45,35 @@ function App() {
     })
 
     mapRef.current.on('load', () => {
-      console.log(coordinates.coordinates)
       if (mapRef.current != null) {
+        mapRef.current.addSource('routes', {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'MultiLineString',
+              coordinates: coordinatesTwo.coordinates
+            }
+          }
+        });
+
+        mapRef.current.addLayer({
+          id: 'routes',
+          type: 'line',
+          source: 'routes',
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          paint: {
+            'line-color': '#ff0000',
+            'line-width': 1
+          }
+        });
+
+
+
         mapRef.current.addSource('route', {
           type: 'geojson',
           data: {
@@ -63,7 +81,7 @@ function App() {
             properties: {},
             geometry: {
               type: 'MultiLineString',
-              coordinates: coordinates.coordinates
+              coordinates: coordinatesOne.coordinates
             }
           }
         });
@@ -77,10 +95,11 @@ function App() {
             'line-cap': 'round'
           },
           paint: {
-            'line-color': '#ff0000',
+            'line-color': '#0000ff',
             'line-width': 1
           }
         });
+
       }
     })
 
